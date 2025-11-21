@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import type { AdminItem, ItemStatus } from "../types/item";
-import { mockItems } from "../data/mockItems";
 import { ItemTable } from "../components/ItemTable";
+import { fetchItems } from "../api/itemApi";
 
 const STATUS_FILTERS: { label: string; value: ItemStatus | "all" }[] = [
   { label: "Tất cả", value: "all" },
@@ -12,7 +12,16 @@ const STATUS_FILTERS: { label: string; value: ItemStatus | "all" }[] = [
 ];
 
 export const ItemManagementPage = () => {
-  const [items, setItems] = useState<AdminItem[]>(mockItems);
+  const [items, setItems] = useState<AdminItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchItems()
+      .then((data) => setItems(data))
+      .catch((err) => setError("Không thể tải dữ liệu sản phẩm"))
+      .finally(() => setLoading(false));
+  }, []);
   const [statusFilter, setStatusFilter] = useState<ItemStatus | "all">("all");
 
   const filteredItems = useMemo(() => {
@@ -46,7 +55,13 @@ export const ItemManagementPage = () => {
           </label>
         </div>
       </div>
-      <ItemTable items={filteredItems} onChangeStatus={handleChangeStatus} />
+      {loading ? (
+        <div className="text-gray-500">Đang tải dữ liệu...</div>
+      ) : error ? (
+        <div className="text-red-500">{error}</div>
+      ) : (
+        <ItemTable items={filteredItems} onChangeStatus={handleChangeStatus} />
+      )}
     </div>
   );
 };

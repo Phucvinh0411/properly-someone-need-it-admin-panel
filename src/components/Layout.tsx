@@ -33,8 +33,8 @@ export const Layout = ({ children }: LayoutProps) => {
             Sản phẩm
           </Link>
           <Link
-            to="/admin/review-items"
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${isActive("/admin/review-items") ? "bg-gray-800 text-white" : "text-gray-200 hover:bg-gray-800/60"}`}
+            to="/admin/pending-items"
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${isActive("/admin/pending-items") ? "bg-gray-800 text-white" : "text-gray-200 hover:bg-gray-800/60"}`}
           >
             Duyệt bán
           </Link>

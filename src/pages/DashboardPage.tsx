@@ -1,12 +1,24 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import type { AdminUser } from "../types/user";
 import type { AdminItem } from "../types/item";
-import { mockUsers } from "../data/mockUsers";
-import { mockItems } from "../data/mockItems";
+import { fetchUsers } from "../api/userApi";
+import { fetchItems } from "../api/itemApi";
 
 export const DashboardPage = () => {
-  const users = mockUsers as AdminUser[];
-  const items = mockItems as AdminItem[];
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [items, setItems] = useState<AdminItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    Promise.all([fetchUsers(), fetchItems()])
+      .then(([userData, itemData]) => {
+        setUsers(userData);
+        setItems(itemData);
+      })
+      .catch(() => setError("Không thể tải dữ liệu tổng quan"))
+      .finally(() => setLoading(false));
+  }, []);
 
   const stats = useMemo(() => {
     const totalUsers = users.length;
@@ -29,12 +41,19 @@ export const DashboardPage = () => {
     };
   }, [users, items]);
 
-  return (
+  if (loading) {
+    return <div className="text-gray-500">Đang tải dữ liệu tổng quan...</div>;
+  }
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+  // ...existing code...
+    return (
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold mb-1">Tổng quan hệ thống</h2>
-          <p className="text-sm text-gray-500">Theo dõi nhanh số lượng người dùng và tin đăng (mock data).</p>
+          <p className="text-sm text-gray-500">Theo dõi nhanh số lượng người dùng và tin đăng.</p>
         </div>
         <div className="text-sm text-gray-400 mt-2 md:mt-0">
           Hôm nay: {new Date().toLocaleDateString("vi-VN")}
@@ -60,7 +79,7 @@ export const DashboardPage = () => {
         <div className="rounded-xl bg-white p-6 shadow border-t-4 border-red-500 flex flex-col gap-1">
           <div className="text-sm text-gray-500 font-semibold mb-1">Tin đã ẩn / xóa</div>
           <div className="text-3xl font-bold text-red-700 mb-1">{stats.deletedItems}</div>
-          <div className="text-xs text-gray-500">Dựa trên dữ liệu mock</div>
+          <div className="text-xs text-gray-500">Dựa trên dữ liệu thực</div>
         </div>
       </div>
 

@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import type { AdminUser } from "../types/user";
-import { mockUsers } from "../data/mockUsers";
 import { UserTable } from "../components/UserTable";
+import { fetchUsers, updateUserBanStatus } from "../api/userApi";
 
 const TRUST_FILTERS = [
   { label: "Tất cả", value: "all" as const },
@@ -12,7 +12,16 @@ const TRUST_FILTERS = [
 type TrustFilterValue = (typeof TRUST_FILTERS)[number]["value"];
 
 export const UserManagementPage = () => {
-  const [users, setUsers] = useState<AdminUser[]>(mockUsers);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchUsers()
+      .then((data) => setUsers(data))
+      .catch((err) => setError("Không thể tải dữ liệu người dùng"))
+      .finally(() => setLoading(false));
+  }, []);
   const [trustFilter, setTrustFilter] = useState<TrustFilterValue>("all");
 
   const filteredUsers = useMemo(() => {
@@ -25,18 +34,15 @@ export const UserManagementPage = () => {
     return users;
   }, [users, trustFilter]);
 
-  const handleToggleBan = (userId: string) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u._id === userId
-          ? {
-              ...u,
-              isBanned: !u.isBanned,
-              bannedAt: !u.isBanned ? new Date().toISOString() : undefined,
-            }
-          : u,
-      ),
-    );
+  const handleToggleBan = async (userId: string) => {
+    const user = users.find((u) => u._id === userId);
+    if (!user) return;
+    try {
+      const updated = await updateUserBanStatus(userId, !user.isBanned);
+      setUsers((prev) => prev.map((u) => (u._id === userId ? updated : u)));
+    } catch {
+      setError("Không thể cập nhật trạng thái người dùng");
+    }
   };
 
   return (
@@ -59,7 +65,13 @@ export const UserManagementPage = () => {
           </label>
         </div>
       </div>
-      <UserTable users={filteredUsers} onToggleBan={handleToggleBan} />
+      {loading ? (
+        <div className="text-gray-500">Đang tải dữ liệu...</div>
+      ) : error ? (
+        <div className="text-red-500">{error}</div>
+      ) : (
+        <UserTable users={filteredUsers} onToggleBan={handleToggleBan} />
+      )}
     </div>
   );
 };

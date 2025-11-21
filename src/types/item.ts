@@ -21,6 +21,10 @@ export interface ItemLocation {
 export interface AdminItem {
   _id: string;
   sellerId: string;
+  seller?: {
+    _id: string;
+    fullName: string;
+  };
 
   title: string;
   description: string;

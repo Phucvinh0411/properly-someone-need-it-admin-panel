@@ -4,6 +4,7 @@ import { Layout } from "./components/Layout";
 import { DashboardPage } from "./pages/DashboardPage";
 import { UserManagementPage } from "./pages/UserManagementPage";
 import { ItemManagementPage } from "./pages/ItemManagementPage";
+import { PendingApprovalPage } from "./pages/PendingApprovalPage";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/admin" element={<DashboardPage />} />
         <Route path="/admin/users" element={<UserManagementPage />} />
         <Route path="/admin/items" element={<ItemManagementPage />} />
+        <Route path="/admin/pending-items" element={<PendingApprovalPage />} />
       </Routes>
     </Layout>
   );
