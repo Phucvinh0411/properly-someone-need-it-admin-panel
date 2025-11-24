@@ -2,44 +2,54 @@ import { useState, useEffect } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
-import * as authApi from "../api/authApi";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login, sendOtp, user } = useAuth();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+
+  async function handleSendOtp() {
+    setError(null);
+    if (!email) {
+      setError("Vui lòng nhập email.");
+      return;
+    }
+    setSendingOtp(true);
+    try {
+      await sendOtp(email);
+      setSent(true);
+    } catch (err: any) {
+      setError(err?.message || "Lỗi khi gửi OTP");
+    }
+    setSendingOtp(false);
+  }
 
   async function handleSubmit(e?: FormEvent) {
     e?.preventDefault();
     setError(null);
-    if (!email || !password) {
-      setError("Vui lòng nhập email và mật khẩu.");
+    if (!email || !otp) {
+      setError("Vui lòng nhập email và mã OTP.");
       return;
     }
     setLoading(true);
     try {
-      const data = await authApi.login({ email, password });
-      // expect { accessToken, user }
-      if (data?.accessToken) {
-        localStorage.setItem("accessToken", data.accessToken);
-        navigate("/admin");
-      } else {
-        throw new Error(data?.message || "Đăng nhập thất bại");
-      }
+      await login(email, otp);
+      navigate("/admin");
     } catch (err: any) {
       setError(err?.message || "Lỗi khi đăng nhập");
     }
     setLoading(false);
   }
 
-  // If already logged in, redirect (useEffect to avoid navigating during render)
   useEffect(() => {
-    if (localStorage.getItem("accessToken")) {
-      navigate("/admin");
-    }
-  }, [navigate]);
+    if (user) navigate("/admin");
+  }, [navigate, user]);
 
   return (
     <AuthLayout>
@@ -54,28 +64,38 @@ export default function LoginPage() {
             placeholder="you@example.com"
           />
         </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded"
+            onClick={handleSendOtp}
+            disabled={sendingOtp}
+          >
+            {sendingOtp ? "Gửi..." : sent ? "Gửi lại OTP" : "Gửi OTP"}
+          </button>
+          <div className="text-sm text-gray-500">Hoặc nhập mã nếu đã có</div>
+        </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700">Mật khẩu</label>
+          <label className="block text-sm font-medium text-gray-700">Mã OTP</label>
           <input
-            type="password"
             className="mt-1 block w-full rounded-md border-gray-200 shadow-sm p-2"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            placeholder="123456"
           />
         </div>
+
         {error && <div className="text-red-600 text-sm">{error}</div>}
+
         <div className="flex items-center justify-between">
           <button
             type="submit"
             className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
-            onClick={handleSubmit}
             disabled={loading}
           >
             {loading ? "Đang..." : "Đăng nhập"}
-          </button>
-          <button type="button" className="text-sm text-gray-500 hover:underline" onClick={() => navigate('/register')}>
-            Đăng ký
           </button>
         </div>
       </form>

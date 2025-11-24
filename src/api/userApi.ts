@@ -1,4 +1,4 @@
-import axios from "axios";
+import axiosClient from "./axiosClient";
 import { API_BASE_URL } from "./config";
 import type { AdminUser } from "../types/user";
 
@@ -10,24 +10,24 @@ async function handleAxios<T>(p: Promise<{ data: T }>): Promise<T> {
 }
 
 export async function fetchUsers(): Promise<AdminUser[]> {
-  return handleAxios<AdminUser[]>(axios.get(`${API_ROOT}/users`));
+  return handleAxios<AdminUser[]>(axiosClient.get(`${API_ROOT}/users`));
 }
 
 export async function fetchUser(userId: string): Promise<AdminUser> {
-  return handleAxios<AdminUser>(axios.get(`${API_ROOT}/users/${encodeURIComponent(userId)}`));
+  return handleAxios<AdminUser>(axiosClient.get(`${API_ROOT}/users/${encodeURIComponent(userId)}`));
 }
 
 export async function updateUserBanStatus(userId: string, isBanned: boolean): Promise<AdminUser> {
   return handleAxios<AdminUser>(
-    axios.patch(`${API_ROOT}/users/${encodeURIComponent(userId)}/ban`, { isBanned })
+    axiosClient.patch(`${API_ROOT}/users/${encodeURIComponent(userId)}/ban`, { isBanned })
   );
 }
 
 // optional helpers you can use from UI
 export async function createUser(payload: Partial<AdminUser>): Promise<AdminUser> {
-  return handleAxios<AdminUser>(axios.post(`${API_ROOT}/users`, payload));
+  return handleAxios<AdminUser>(axiosClient.post(`${API_ROOT}/users`, payload));
 }
 
 export async function deleteUser(userId: string): Promise<void> {
-  await axios.delete(`${API_ROOT}/users/${encodeURIComponent(userId)}`);
+  await axiosClient.delete(`${API_ROOT}/users/${encodeURIComponent(userId)}`);
 }
