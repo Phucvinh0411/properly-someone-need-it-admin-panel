@@ -22,7 +22,7 @@ export const ItemManagementPage = () => {
     if (user?.role === "admin") {
       fetchItems()
         .then((data) => setItems(data))
-        .catch((err) => setError("Không thể tải dữ liệu sản phẩm"))
+        .catch(() => setError("Không thể tải dữ liệu sản phẩm"))
         .finally(() => setLoading(false));
     } else {
       setLoading(false);

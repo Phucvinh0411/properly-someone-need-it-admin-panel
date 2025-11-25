@@ -1,4 +1,6 @@
-const API_BASE = (import.meta?.env?.VITE_API_BASE as string) || "/api";
+import { API_BASE_URL } from './config';
+
+const API_BASE = API_BASE_URL;
 
 type SendOtpPayload = { email: string; purpose: "login" | "register" };
 type LoginPayload = { email: string; otp: string };

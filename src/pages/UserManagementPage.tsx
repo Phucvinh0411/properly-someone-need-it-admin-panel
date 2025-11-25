@@ -22,7 +22,7 @@ export const UserManagementPage = () => {
     if (user?.role === "admin") {
       fetchUsers()
         .then((data) => setUsers(data))
-        .catch((err) => setError("Không thể tải dữ liệu người dùng"))
+        .catch(() => setError("Không thể tải dữ liệu người dùng"))
         .finally(() => setLoading(false));
     } else {
       setLoading(false);

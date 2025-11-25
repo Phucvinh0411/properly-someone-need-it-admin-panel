@@ -6,15 +6,4 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()  ],
-  server: {
-    proxy: {
-      // Proxy /api requests to backend so cookies (refresh token) are same-origin in dev
-      "/api": {
-        target: "http://localhost:3000",
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, "/api"),
-      },
-    },
-  },
 })
